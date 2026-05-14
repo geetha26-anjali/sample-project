@@ -277,6 +277,26 @@ class HtmlCliIntegrationTests(unittest.TestCase):
             path = cli.compute_save_path_display("/tmp", report.topic, "v3", "html")
             self.assertTrue(path.endswith("/ai-agent-frameworks-raw-html-v3.html"))
 
+    def test_save_output_can_persist_comparison_html(self):
+        reports = [
+            ("OpenClaw", _report("OpenClaw", ["Containers"])),
+            ("Hermes", _report("Hermes", ["Memory"])),
+        ]
+        rendered = cli.emit_comparison_output(reports, "html")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = cli.save_output(
+                reports[0][1],
+                "html",
+                tmpdir,
+                topic_override=cli.comparison_topic(reports),
+                rendered_content=rendered,
+            )
+            self.assertEqual("openclaw-vs-hermes-raw-html.html", path.name)
+            saved = path.read_text(encoding="utf-8")
+        self.assertIn("last30days · OpenClaw vs Hermes", saved)
+        self.assertIn("comparing 2: OpenClaw, Hermes", saved)
+        self.assertNotIn("last30days · OpenClaw</title>", saved)
+
 
 if __name__ == "__main__":
     unittest.main()
