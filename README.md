@@ -19,12 +19,12 @@ This README tracks the current v3 pipeline. The runtime skill spec lives in [SKI
 /plugin marketplace add mvanhorn/last30days-skill
 ```
 
-**Codex, Cursor, Copilot, or any Agent Skills host:**
+**Codex, Cursor, Copilot, Gemini CLI, or any of 50+ [Agent Skills](https://agentskills.io) hosts:**
 ```
 npx skills add mvanhorn/last30days-skill
 ```
 
-More install options (claude.ai web, OpenClaw, Gemini CLI, manual) in the [Install](#install) section below.
+More install options (claude.ai web, OpenClaw, manual) in the [Install](#install) section below.
 
 Zero config. Reddit, HN, Polymarket, and GitHub work immediately. Run it once and the setup wizard unlocks X, YouTube, TikTok, and more in 30 seconds.
 
@@ -167,10 +167,10 @@ Say "eli5 on" after any research run. The synthesis rewrites in plain language. 
 | Surface | Install | Updates |
 |---------|---------|---------|
 | **Claude Code** (recommended) | `/plugin marketplace add mvanhorn/last30days-skill` | Auto via marketplace, or `claude plugin update last30days@last30days-skill` |
-| **Codex, Cursor, Copilot, any [Agent Skills](https://agentskills.io) host** | `npx skills add mvanhorn/last30days-skill` | `npx skills update last30days` |
+| **Codex, Cursor, Copilot, Gemini CLI, GitHub Copilot, or any of 50+ [Agent Skills](https://agentskills.io) hosts** | `npx skills add mvanhorn/last30days-skill` | `npx skills update last30days` |
 | **claude.ai** (web) | [Download `last30days.skill`](https://github.com/mvanhorn/last30days-skill/releases/latest/download/last30days.skill) and upload via Settings > Capabilities > Skills > + | Re-download and re-upload |
 | **OpenClaw** | `clawhub install last30days-official` | `clawhub update last30days-official` |
-| **Gemini CLI** | Clone then `gemini extensions install ./last30days-skill` (see below) | Re-pull and reinstall |
+| **Gemini CLI** (native extension) | Clone then `gemini extensions install ./last30days-skill` (see below) | Re-pull and reinstall |
 
 ### Claude Code (recommended)
 
@@ -188,9 +188,9 @@ npx skills add mvanhorn/last30days-skill -a claude-code
 
 The native plugin and the `npx skills` install can coexist; Claude Code dedupes the slash command.
 
-### Codex, Cursor, Copilot, and other Agent Skills hosts
+### Codex, Cursor, Copilot, Gemini CLI, and other Agent Skills hosts
 
-Install via the open [Agent Skills](https://agentskills.io) CLI:
+Install via the open [Agent Skills](https://agentskills.io) CLI — supports 50+ harnesses including `codex`, `cursor`, `github-copilot`, `gemini-cli`, `claude-code`, `windsurf`, `cline`, `continue`, `roo`, `aider-desk`, `opencode`, `goose`, and more (full list on the [vercel-labs/skills repo](https://github.com/vercel-labs/skills)).
 
 ```bash
 npx skills add mvanhorn/last30days-skill
@@ -201,6 +201,7 @@ By default this installs for whichever harness it detects. To target a specific 
 ```bash
 npx skills add mvanhorn/last30days-skill -a codex
 npx skills add mvanhorn/last30days-skill -a cursor
+npx skills add mvanhorn/last30days-skill -a gemini-cli
 npx skills add mvanhorn/last30days-skill -a codex -a cursor
 ```
 
@@ -232,7 +233,9 @@ Enable "Code execution and file creation" under Capabilities first — skills wo
 clawhub install last30days-official
 ```
 
-### Gemini CLI
+### Gemini CLI (native extension)
+
+The `npx skills add -a gemini-cli` path above is the simpler route. The native Gemini extension install is kept here for users who prefer it or already have a Gemini extensions workflow.
 
 Gemini CLI v0.9.0 has an upstream installer bug that can fail with `Configuration file not found at /tmp/gemini-extensionXXXXXX/gemini-extension.json` ([upstream issue](https://github.com/google-gemini/gemini-cli/issues/11452)). Workaround:
 
