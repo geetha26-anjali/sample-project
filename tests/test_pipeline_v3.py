@@ -904,5 +904,81 @@ class TestZeroKeyPipelineRun(unittest.TestCase):
             self.assertEqual("fallback-local-score", candidate.explanation)
 
 
+class TestExcludeSources(unittest.TestCase):
+    """EXCLUDE_SOURCES env var filters sources out of available_sources().
+
+    The existing INCLUDE_SOURCES allowlist (used by Perplexity opt-in) does
+    not cover this case — tiktok and instagram are added unconditionally
+    when SCRAPECREATORS_API_KEY is set, with no way to opt out short of
+    unsetting the key. EXCLUDE_SOURCES gives runs a per-invocation denylist.
+    """
+
+    def test_excludes_tiktok_and_instagram(self):
+        config = {
+            "SCRAPECREATORS_API_KEY": "test-key",
+            "EXCLUDE_SOURCES": "tiktok,instagram",
+        }
+        sources = pipeline.available_sources(config)
+        self.assertNotIn("tiktok", sources)
+        self.assertNotIn("instagram", sources)
+        self.assertIn("reddit", sources)
+        self.assertIn("hackernews", sources)
+
+    def test_no_exclusion_when_unset(self):
+        config = {"SCRAPECREATORS_API_KEY": "test-key"}
+        sources = pipeline.available_sources(config)
+        self.assertIn("tiktok", sources)
+        self.assertIn("instagram", sources)
+
+    def test_empty_exclude_sources_is_noop(self):
+        config = {
+            "SCRAPECREATORS_API_KEY": "test-key",
+            "EXCLUDE_SOURCES": "",
+        }
+        sources = pipeline.available_sources(config)
+        self.assertIn("tiktok", sources)
+        self.assertIn("instagram", sources)
+
+    def test_whitespace_and_case_insensitive(self):
+        config = {
+            "SCRAPECREATORS_API_KEY": "test-key",
+            "EXCLUDE_SOURCES": " TikTok , INSTAGRAM ",
+        }
+        sources = pipeline.available_sources(config)
+        self.assertNotIn("tiktok", sources)
+        self.assertNotIn("instagram", sources)
+
+    def test_excludes_non_scrapecreators_source(self):
+        """EXCLUDE_SOURCES applies to any source, not just SC-backed ones."""
+        config = {"EXCLUDE_SOURCES": "hackernews"}
+        sources = pipeline.available_sources(config)
+        self.assertNotIn("hackernews", sources)
+        self.assertIn("reddit", sources)
+
+
+class TestExcludeSourcesEndToEnd(unittest.TestCase):
+    """Wiring regression: EXCLUDE_SOURCES from the process environment must
+    reach available_sources() via env.get_config(). The unit tests above
+    construct config dicts directly; this one exercises the env-to-config
+    path so a missing entry in env.py's keys list is caught immediately."""
+
+    def test_exclude_sources_from_env_propagates_through_get_config(self):
+        import os
+        from unittest.mock import patch as _patch
+        from lib import env as env_mod
+        from importlib import reload
+        with _patch.dict(os.environ, {
+            "LAST30DAYS_CONFIG_DIR": "",
+            "EXCLUDE_SOURCES": "tiktok,instagram",
+            "SCRAPECREATORS_API_KEY": "fake",
+        }, clear=False):
+            reload(env_mod)
+            cfg = env_mod.get_config()
+        self.assertEqual(cfg.get("EXCLUDE_SOURCES"), "tiktok,instagram")
+        sources = pipeline.available_sources(cfg)
+        self.assertNotIn("tiktok", sources)
+        self.assertNotIn("instagram", sources)
+
+
 if __name__ == "__main__":
     unittest.main()
